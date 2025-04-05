@@ -63,25 +63,43 @@ int main()
 	int depth;
 	cin >> depth; cin.ignore();
 	
-	EtatPlateau etat;
-		
-	for (int i = 0; i < TAILLE; i++) 
+	EtatPlateau initial;
+	for (int i = 0; i < TAILLE; i++)
+		for (int j = 0; j < TAILLE; j++)
+			cin >> initial.grille[i][j];
+
+	initial.tour = 0;
+
+	vector<EtatPlateau> stack;
+	stack.push_back(initial);
+	uint32_t result_hash = 0;
+
+	while (!stack.empty()) 
 	{
-		for (int j = 0; j < TAILLE; j++) 
+		EtatPlateau etat = stack.back();
+		stack.pop_back();
+
+		if (etat.tour == depth || etat.check_full())
+		 {
+			uint32_t hash = etat.calculerHash();
+			result_hash = (result_hash + hash) % 230;
+			continue;
+		}
+		for (int i = 0; i < TAILLE; i++) 
 		{
-			int value;
-			cin >> value; cin.ignore();
-			etat.grille[i][j] = value;
+			for (int j = 0; j < TAILLE; j++) 
+			{
+				if (etat.grille[i][j] == 0) 
+				{
+					EtatPlateau nouveau = etat;
+					nouveau.grille[i][j] = 1;
+					nouveau.tour = etat.tour + 1;
+					stack.push_back(nouveau);
+				}
+			}
 		}
 	}
-	cerr << "État initial:" << endl;
-	etat.debug();
-	uint32_t hash = etat.calculerHash();
-	cerr << "Hash du plateau initial: " << hash << endl;
-	cerr << "Le plateau est plein: " << (etat.check_full() ? "Oui" : "Non") << endl;
-	cerr << "Nombre de tours à simuler: " << depth << endl;
-	cout << hash << endl;
-	
-	//g++ -o cephalopods algo.cpp 
+
+	cout << result_hash << endl;
 	return 0;
 }
